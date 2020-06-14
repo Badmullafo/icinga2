@@ -1,0 +1,13 @@
+FROM arm64v8/alpine
+
+COPY dockermon/dockerexp.js /icingamon/
+COPY dockermon/package.json /icingamon/
+COPY dockermon/run.sh /
+
+RUN apk update && apk upgrade \
+	&& apk add --no-cache nodejs npm \
+	&& cd /icingamon && npm i \
+	&& chmod +x /run.sh
+
+VOLUME ["/icingamon"]
+CMD ["/run.sh"]

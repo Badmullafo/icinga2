@@ -4,7 +4,7 @@ services:
     #image: jordan/icinga2
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-icinga2
     restart: on-failure:5
     # Set your hostname to the FQDN under which your
     # sattelites will reach this container
@@ -37,7 +37,8 @@ services:
       - ./data/icinga/log/icingaweb2:/var/log/icingaweb2
       - ./data/icinga/log/mysql:/var/log/mysql
       - ./data/icinga/spool:/var/spool/icinga2
-      - ./config:/var/lib/icinga2/api/zones/director-global/director
+      - ./config:/etc/icinga2/conf.d
+      - ./nagios_plugins:/usr/lib/nagios/plugins
       # Sending e-mail
       #  See: https://github.com/jjethwa/icinga2#sending-notification-mails
       #  If you want to enable outbound e-mail, edit the file mstmp/msmtprc
@@ -70,3 +71,23 @@ services:
       - ./data/mysql/data:/var/lib/mysql
       # If you have previously used the container's internal DB use:
       #- ./data/icinga/lib/mysql:/var/lib/mysql
+  dockericinga2mon:
+    build:
+      context: ./
+      dockerfile: Dockerfile-dockermon
+    hostname: icinga2-monitoring
+    environment:
+      - DOCKERSOCK=/docker.sock
+      - MONITORING_API_URL=monitorint.server.local
+      - MONITORING_API_USER=root
+      - MONITORING_API_PASS=PASS
+      - MONITORING_API_PORT=5665
+      - DOCKERSERVERNAME=superdocker
+      - TEMPLATEHOST=passive-host
+      - TEMPLATESERVICE=passive-service
+      - HOSTGROUP=adito
+      - SERVICEGROUP=adito
+      - LOOPTIME=2m
+    volumes:
+      - /var/run/docker.sock:/docker.sock
+    restart: always
