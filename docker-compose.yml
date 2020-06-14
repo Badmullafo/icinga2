@@ -1,6 +1,7 @@
 version: '2'
 services:
   icinga2:
+    container_name: icinga2_http
     #image: jordan/icinga2
     build:
       context: ./
@@ -37,8 +38,7 @@ services:
       - ./data/icinga/log/icingaweb2:/var/log/icingaweb2
       - ./data/icinga/log/mysql:/var/log/mysql
       - ./data/icinga/spool:/var/spool/icinga2
-      - ./config:/etc/icinga2/conf.d
-      - ./nagios_plugins:/usr/lib/nagios/plugins
+      - ./nagios_plugins:/usr/lib/nagios/plugins/2.3.3
       # Sending e-mail
       #  See: https://github.com/jjethwa/icinga2#sending-notification-mails
       #  If you want to enable outbound e-mail, edit the file mstmp/msmtprc
@@ -57,6 +57,8 @@ services:
     container_name: graphite
     restart: on-failure:5
     hostname: graphite
+    depends_on:
+      - icinga2
     volumes:
       - ./data/graphite/conf:/opt/graphite/conf
       - ./data/graphite/storage:/opt/graphite/storage
@@ -76,6 +78,9 @@ services:
       context: ./
       dockerfile: Dockerfile-dockermon
     hostname: icinga2-monitoring
+    depends_on:
+     - icinga2
+    container_name: dockermon
     environment:
       - DOCKERSOCK=/docker.sock
       - MONITORING_API_URL=monitorint.server.local
